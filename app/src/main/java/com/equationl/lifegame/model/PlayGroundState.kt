@@ -39,11 +39,6 @@ data class PlayGroundState(
     }
 
     private fun getRoundAliveCount(pos: Point): Int {
-/*        Log.i(
-            TAG,
-            "getRoundAliveCount: lastIndex=${lifeList.lastIndex} lastIndex2=${lifeList[0].lastIndex}, pos=$pos"
-        )
-        Thread.sleep(5)*/
         var count = 0
         // 将当前细胞周围细胞按照下面序号编号
         //   y  y  y
@@ -77,11 +72,12 @@ data class PlayGroundState(
          * */
         fun randomGenerate(width: Int, height: Int, seed: Long = System.currentTimeMillis()): List<List<Block>> {
             val list = mutableListOf<MutableList<Block>>()
+            val random = Random(seed)
 
             for (h in 0 until height) {
                 val lineList = mutableListOf<Block>()
                 for (w in 0 until width) {
-                    lineList.add(Block(if (Random(seed+h*width+w).nextBoolean()) BlockState.ALIVE else BlockState.DEAD))
+                    lineList.add(Block(if (random.nextBoolean()) BlockState.ALIVE else BlockState.DEAD))
                 }
                 list.add(lineList)
             }

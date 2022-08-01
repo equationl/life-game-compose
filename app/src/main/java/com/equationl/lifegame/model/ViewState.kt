@@ -2,7 +2,7 @@ package com.equationl.lifegame.model
 
 data class ViewState(
     val gameState: GameState = GameState.Wait,
-    val playGroundState: PlayGroundState = PlayGroundState(PlayGroundState.randomGenerate(1, 1))
+    val playGroundState: PlayGroundState = PlayGroundState(PlayGroundState.randomGenerate(50, 50))
 )
 
 enum class GameState(val msg: String) {
