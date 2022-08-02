@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,7 +52,22 @@ fun ControlBar(viewModel: GameViewModel, gameState: GameState) {
                 }
             }
         }
+        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxHeight()) {
+            val context = LocalContext.current
+            ExpandableButton(text = "", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
+                ImportItem {
+                    viewModel.dispatch(GameAction.Import(it, context))
+                }
+            }
+        }
     }
+}
+
+@Composable
+fun ImportItem(onClick: (no: Int) -> Unit) {
+    Text(text = "1", Modifier.clickable {
+        onClick(1)
+    })
 }
 
 @Composable

@@ -1,5 +1,6 @@
 package com.equationl.lifegame.model
 
+import android.content.Context
 import androidx.compose.ui.geometry.Size
 
 data class ViewState(
@@ -23,4 +24,5 @@ sealed class GameAction {
     object ToggleGameState: GameAction()
     data class RandomGenerate(val width: Int, val height: Int, val seed: Long): GameAction()
     data class ChangeSpeed(val speed: RunningSpeed): GameAction()
+    data class Import(val no: Int, val context: Context): GameAction()
 }

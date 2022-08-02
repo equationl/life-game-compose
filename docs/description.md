@@ -325,15 +325,19 @@ public fun Canvas(
 
 ```kotlin
 @Composable
-fun PlayGround(blockList: List<List<Block>>) {
+fun PlayGround(playGroundState: PlayGroundState) {
+    val blockList: List<List<Block>> = playGroundState.lifeList
     Canvas(modifier = Modifier
         .size((blockList[0].size * Block.SIZE).dp, (blockList.size * Block.SIZE).dp)
+        .background(Color.Black)
     ) {
         blockList.forEachIndexed { Column, lineList ->
             lineList.forEachIndexed { row, block ->
-                drawRect(color = block.getColor(),
-                    topLeft = Offset(row*Block.SIZE.toDp().toPx(), Column*Block.SIZE.toDp().toPx()),
-                    size = Size(Block.SIZE.toDp().toPx(), Block.SIZE.toDp().toPx()))
+                if (block.State.isAlive()) {
+                    drawRect(color = block.getColor(),
+                        topLeft = Offset(row*Block.SIZE.dp.toPx(), Column*Block.SIZE.dp.toPx()),
+                        size = Size(Block.SIZE.dp.toPx(), Block.SIZE.dp.toPx()))
+                }
             }
         }
     }
@@ -345,7 +349,7 @@ fun PlayGround(blockList: List<List<Block>>) {
 第一个需要注意的是在绘制矩形时，需要按照当前索引位置和格子尺寸偏移绘制时的起始位置，即：`topLeft = Offset(row*Block.SIZE.toDp().toPx(), Column*Block.SIZE.toDp().toPx())`，
 这里定义的是矩形的左上角的坐标
 
-第二个需要注意的时，在 `Canvas` 中使用的单位都是 px ，所以涉及到单位的地方都需要换算一下，例如：`Block.SIZE.toDp().toPx()`
+第二个需要注意的时，在 `Canvas` 中使用的单位都是 px ，所以涉及到单位的地方都需要换算一下，例如：`Block.SIZE.dp.toPx()`
 
 测试一下，发现卡顿确实是消失了，但是总觉得好像上面代码有点奇怪？
 
@@ -378,6 +382,67 @@ LaunchedEffect(key1 = "game looper") {
 在上面的代码中，我们循环读取 `gameState` 的值，如果该值被更改为运行状态（Running），则调用一次步进，以此达到自动运行的目的，我们还可以通过设置 `delay` 的值来控制游戏速度。
 
 `viewModel` 可以通过 lifeCycle 的 compose 库直接获得：`val viewModel: GameViewModel = viewModel()`
+
+最后，经过亿点点的小优化和细节调整，APP完成！
+
+## 导入预设
+在导入预设之前，我们需要先找到一些预设。
+
+在 [Life Lexicon Home Page](https://conwaylife.com/ref/lexicon/lex_home.htm) 这个网站上，我找到一些有意思的预设种子，我们将其下载下来。
+
+发现它的数据格式形如：
+
+```
+.**....................................
+.**.................*..................
+...................*.*............*.*..
+....................*............*.....
+**.......**.......................*..*.
+**.*.....**.......................*.*.*
+...*.......................*.......*..*
+...*.......................**.......**.
+*..*.................**.....*..........
+.**..................*.................
+.....................***...............
+....................................**.
+....................................**.
+.**....................................
+*..*...................................
+*.*.*................*.*....**.....**..
+.*..*.................**....**.....**.*
+.....*............*...*...............*
+..*.*............*.*..................*
+..................*................*..*
+....................................**.
+```
+
+一眼就能看出来，其中的 `.` 表示死亡细胞， `*` 表示存活细胞。
+
+我们将这些数据存入一个文本文件 `sample.txt` ， 并将其移至项目的 raw 文件夹。
+
+然后解析这个数据：
+
+```kotlin
+val sourceString = context.resources.openRawResource(R.raw.sample).bufferedReader().use { it.readText() }
+val lifeList: MutableList<MutableList<Block>> = mutableListOf()
+
+sourceString.lines().forEach { string ->
+    val line = mutableListOf<Block>()
+    string.forEach { char ->
+        if (char == '.') line.add(Block(BlockState.DEAD))
+        if (char == '*') line.add(Block(BlockState.ALIVE))
+    }
+    lifeList.add(line)
+}
+```
+
+最后将解析出来的 lifeList 重新更新至 viewStates 即可。
+
+不知道各位读者有没有看出来，这个预设其实就是我的截图中使用的预设，官方的介绍如下：
+
+> The following p104 double-barrelled glider gun. It uses a B-heptomino and emits one glider every 52 generations. It was found by Noam Elkies in March 1996, except that Elkies used blockers instead of molds, the improvement being found by David Bell later the same month.
+
+各位增加运行速度就可以看出，它每隔一段时间就会从上方或下方斜射出一个 “滑翔机”。
 
 # 后续优化
 

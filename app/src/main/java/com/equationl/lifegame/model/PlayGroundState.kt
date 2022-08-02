@@ -96,5 +96,6 @@ enum class RunningSpeed(val title: String, val delayTime: Long) {
     Slow2("0.5", 82L),
     Normal("1", 41L),
     Fast1("1.5", 26L),
-    Fast2("2", 13L)
+    Fast2("2", 13L),
+    Fast4("6", 6L),
 }
