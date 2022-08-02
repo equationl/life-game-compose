@@ -2,6 +2,7 @@ package com.equationl.lifegame.view
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -25,8 +26,8 @@ fun PlayGround(playGroundState: PlayGroundState) {
             lineList.forEachIndexed { row, block ->
                 if (block.State.isAlive()) {
                     drawRect(color = block.getColor(),
-                        topLeft = Offset(row*Block.SIZE.toDp().toPx(), Column*Block.SIZE.toDp().toPx()),
-                        size = Size(Block.SIZE.toDp().toPx(), Block.SIZE.toDp().toPx()))
+                        topLeft = Offset(row*Block.SIZE.dp.toPx(), Column*Block.SIZE.dp.toPx()),
+                        size = Size(Block.SIZE.dp.toPx(), Block.SIZE.dp.toPx()))
                 }
             }
         }
@@ -35,11 +36,13 @@ fun PlayGround(playGroundState: PlayGroundState) {
 
 @Composable
 fun PlayInfo(playGroundState: PlayGroundState) {
-    Text(text = "Step: ${playGroundState.step}")
-    Text(text = "Info: ${playGroundState.size.width}x${playGroundState.size.height};@${playGroundState.seed};X${playGroundState.speed.title}")
+    Column(Modifier.background(Color.White)) {
+        Text(text = "Step: ${playGroundState.step}")
+        Text(text = "Info: ${playGroundState.size.width}x${playGroundState.size.height};@${playGroundState.seed};X${playGroundState.speed.title}")
+    }
 }
 
-@Preview(showSystemUi = true)
+@Preview
 @Composable
 fun PLayGroundPreview() {
     val playGroundState = PlayGroundState(
