@@ -18,9 +18,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 class MainActivity : ComponentActivity() {
-    companion object {
-        const val AutoRunningDuration = 50L
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +35,7 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.viewStates.gameState == GameState.Running) {
                                 viewModel.dispatch(GameAction.RunStep)
                             }
-                            delay(AutoRunningDuration)
+                            delay(viewModel.viewStates.playGroundState.speed.delayTime)
                         }
                     }
 

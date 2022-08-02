@@ -1,7 +1,7 @@
 package com.equationl.lifegame.model
 
 import android.graphics.Point
-import android.util.Log
+import androidx.compose.ui.geometry.Size
 import com.equationl.lifegame.dataModel.Block
 import com.equationl.lifegame.dataModel.BlockState
 import kotlin.random.Random
@@ -9,7 +9,11 @@ import kotlin.random.Random
 private const val TAG = "PlayGroundState"
 
 data class PlayGroundState(
-    val lifeList: List<List<Block>>
+    val lifeList: List<List<Block>>,
+    val size: Size,
+    val seed: Long,
+    val step: Int,
+    val speed: RunningSpeed = RunningSpeed.Normal
 ) {
 
     /**
@@ -85,4 +89,12 @@ data class PlayGroundState(
             return list
         }
     }
+}
+
+enum class RunningSpeed(val title: String, val delayTime: Long) {
+    Slow1("0.25", 164L),
+    Slow2("0.5", 82L),
+    Normal("1", 41L),
+    Fast1("1.5", 26L),
+    Fast2("2", 13L)
 }

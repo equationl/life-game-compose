@@ -3,6 +3,7 @@ package com.equationl.lifegame.view
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -12,26 +13,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.equationl.lifegame.dataModel.Block
 import com.equationl.lifegame.model.PlayGroundState
-
-
-/*@Composable
-fun PlayGround(playGroundState: PlayGroundState) {
-    val blockList: List<List<Block>> = playGroundState.lifeList
-    Column(
-        Modifier
-            .size((blockList[0].size * Block.SIZE).dp, (blockList.size * Block.SIZE).dp)
-            .background(Color.Black)) {
-        blockList.forEach { lineList ->
-            Row {
-                lineList.forEach { block ->
-                    Row(modifier = Modifier
-                        .size(Block.SIZE.dp)
-                        .background(block.getColor())) {}
-                }
-            }
-        }
-    }
-}*/
 
 @Composable
 fun PlayGround(playGroundState: PlayGroundState) {
@@ -52,9 +33,20 @@ fun PlayGround(playGroundState: PlayGroundState) {
     }
 }
 
+@Composable
+fun PlayInfo(playGroundState: PlayGroundState) {
+    Text(text = "Step: ${playGroundState.step}")
+    Text(text = "Info: ${playGroundState.size.width}x${playGroundState.size.height};@${playGroundState.seed};X${playGroundState.speed.title}")
+}
+
 @Preview(showSystemUi = true)
 @Composable
 fun PLayGroundPreview() {
-    val playGroundState = PlayGroundState(PlayGroundState.randomGenerate(70, 90, 1))
+    val playGroundState = PlayGroundState(
+        PlayGroundState.randomGenerate(50, 50, 1),
+        Size(50f, 50f),
+        1,
+        0
+    )
     PlayGround(playGroundState)
 }

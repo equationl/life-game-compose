@@ -1,19 +1,38 @@
 package com.equationl.lifegame.view
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.equationl.lifegame.viewModel.GameViewModel
 
 @Composable
 fun GameScreen(viewModel: GameViewModel) {
-    Column(Modifier.fillMaxSize()) {
-        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+    Box(Modifier.fillMaxSize()) {
+
+        Row(horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxSize()
+        ) {
             PlayGround(playGroundState = viewModel.viewStates.playGroundState)
         }
-        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-            ControlBar(viewModel, gameState = viewModel.viewStates.gameState)
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            PlayInfo(viewModel.viewStates.playGroundState)
+        }
+
+        Row(horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            ControlBar(viewModel,
+                gameState = viewModel.viewStates.gameState,
+            )
         }
     }
 }
