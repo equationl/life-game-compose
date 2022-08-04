@@ -2,13 +2,13 @@ package com.equationl.lifegame.model
 
 import androidx.compose.ui.geometry.Size
 import com.equationl.lifegame.dataModel.Block
-import com.equationl.lifegame.dataModel.Block.isAlive
+import com.equationl.lifegame.utils.PlayGroundUtils
 import kotlin.random.Random
 
 private const val TAG = "PlayGroundState"
 
 data class PlayGroundState(
-    val lifeList: MutableList<MutableList<Int>>,
+    val lifeList: Array<IntArray>,
     val size: Size,
     val seed: Long,
     val step: Int,
@@ -18,33 +18,35 @@ data class PlayGroundState(
     /**
      * 更新一步状态
      * */
-    fun stepUpdate(): MutableList<MutableList<Int>> {
-        // 深度复制，不然无法 recompose
-        val newLifeList: MutableList<MutableList<Int>> = mutableListOf()
-        lifeList.forEach { lineList ->
-            newLifeList.add(lineList.map { it }.toMutableList())
-        }
-
-        val columnLastIndex = newLifeList.size - 1
-        val rowLastIndex = newLifeList[0].size - 1
-
-        newLifeList.forEachIndexed { columnIndex, lineList ->
-            lineList.forEachIndexed { rowIndex, block ->
-                val aroundAliveCount = getRoundAliveCount(rowIndex, columnIndex, columnLastIndex, rowLastIndex)
-                if (block.isAlive()) { // 当前细胞存活
-                    if (aroundAliveCount < 2) newLifeList[columnIndex][rowIndex] = Block.DEAD
-                    if (aroundAliveCount > 3) newLifeList[columnIndex][rowIndex] = Block.DEAD
-                }
-                else { // 当前细胞死亡
-                    if (aroundAliveCount == 3) newLifeList[columnIndex][rowIndex] = Block.ALIVE
-                }
-            }
-        }
-
-        return newLifeList
+    fun stepUpdate(): Array<IntArray> {
+        return PlayGroundUtils.stepUpdate(lifeList)
     }
 
-    private fun getRoundAliveCount(posX: Int, posY: Int, columnLastIndex: Int, rowLastIndex: Int): Int {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PlayGroundState
+
+        if (!lifeList.contentDeepEquals(other.lifeList)) return false
+        if (size != other.size) return false
+        if (seed != other.seed) return false
+        if (step != other.step) return false
+        if (speed != other.speed) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = lifeList.contentDeepHashCode()
+        result = 31 * result + size.hashCode()
+        result = 31 * result + seed.hashCode()
+        result = 31 * result + step
+        result = 31 * result + speed.hashCode()
+        return result
+    }
+
+    /*private fun getRoundAliveCount(posX: Int, posY: Int, columnLastIndex: Int, rowLastIndex: Int): Int {
         var count = 0
         // 将当前细胞周围细胞按照下面序号编号
         //   y  y  y
@@ -82,22 +84,24 @@ data class PlayGroundState(
 
 
         return count
-    }
+    }*/
 
     companion object {
         /**
          * 随机生成一个初始图
          * */
-        fun randomGenerate(width: Int, height: Int, seed: Long = System.currentTimeMillis()): MutableList<MutableList<Int>> {
-            val list = mutableListOf<MutableList<Int>>()
+        fun randomGenerate(width: Int, height: Int, seed: Long = System.currentTimeMillis()): Array<IntArray> {
+            val list: Array<IntArray> = Array(height) {
+                IntArray(1)
+            }
             val random = Random(seed)
 
             for (h in 0 until height) {
-                val lineList = mutableListOf<Int>()
+                val lineList = IntArray(width)
                 for (w in 0 until width) {
-                    lineList.add(if (random.nextBoolean()) Block.ALIVE else Block.DEAD)
+                    lineList[w] = if (random.nextBoolean()) Block.ALIVE else Block.DEAD
                 }
-                list.add(lineList)
+                list[h] = lineList
             }
 
             return list

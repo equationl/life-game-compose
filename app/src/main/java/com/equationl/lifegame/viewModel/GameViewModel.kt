@@ -31,15 +31,17 @@ class GameViewModel : ViewModel() {
 
     private fun import(no: Int, context: Context) {
         val sourceString = context.resources.openRawResource(R.raw.bomber).bufferedReader().use { it.readText() }
-        val lifeList: MutableList<MutableList<Int>> = mutableListOf()
+        val lifeList: Array<IntArray> = Array(sourceString.lines().size) {
+            IntArray(1)
+        }
 
-        sourceString.lines().forEach { string ->
-            val line = mutableListOf<Int>()
-            string.forEach { char ->
-                if (char == '.') line.add(Block.DEAD)
-                if (char == '*') line.add(Block.ALIVE)
+        sourceString.lines().forEachIndexed { lineIndex, string ->
+            val line = IntArray(string.length)
+            string.forEachIndexed { index, char ->
+                if (char == '.') line[index] = Block.DEAD
+                if (char == '*') line[index] = Block.ALIVE
             }
-            lifeList.add(line)
+            lifeList[lineIndex] = line
         }
 
         viewStates = viewStates.copy(gameState = GameState.Wait,

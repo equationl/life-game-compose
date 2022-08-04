@@ -19,7 +19,7 @@ import com.equationl.lifegame.model.PlayGroundState
 
 @Composable
 fun PlayGround(playGroundState: PlayGroundState) {
-    val blockList: MutableList<MutableList<Int>> = playGroundState.lifeList
+    val blockList = playGroundState.lifeList
     Canvas(modifier = Modifier
         .size((blockList[0].size * Block.SIZE).dp, (blockList.size * Block.SIZE).dp)
         .background(Color.Black)
