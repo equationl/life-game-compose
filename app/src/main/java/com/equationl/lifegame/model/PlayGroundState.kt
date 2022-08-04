@@ -1,15 +1,14 @@
 package com.equationl.lifegame.model
 
-import android.graphics.Point
 import androidx.compose.ui.geometry.Size
 import com.equationl.lifegame.dataModel.Block
-import com.equationl.lifegame.dataModel.BlockState
+import com.equationl.lifegame.dataModel.Block.isAlive
 import kotlin.random.Random
 
 private const val TAG = "PlayGroundState"
 
 data class PlayGroundState(
-    val lifeList: List<List<Block>>,
+    val lifeList: MutableList<MutableList<Int>>,
     val size: Size,
     val seed: Long,
     val step: Int,
@@ -19,22 +18,25 @@ data class PlayGroundState(
     /**
      * 更新一步状态
      * */
-    fun stepUpdate(): List<List<Block>> {
+    fun stepUpdate(): MutableList<MutableList<Int>> {
         // 深度复制，不然无法 recompose
-        val newLifeList: MutableList<List<Block>> = mutableListOf()
+        val newLifeList: MutableList<MutableList<Int>> = mutableListOf()
         lifeList.forEach { lineList ->
-            newLifeList.add(lineList.map { it.copy() })
+            newLifeList.add(lineList.map { it }.toMutableList())
         }
+
+        val columnLastIndex = newLifeList.size - 1
+        val rowLastIndex = newLifeList[0].size - 1
 
         newLifeList.forEachIndexed { columnIndex, lineList ->
             lineList.forEachIndexed { rowIndex, block ->
-                val aroundAliveCount = getRoundAliveCount(Point(rowIndex, columnIndex))
-                if (block.State.isAlive()) { // 当前细胞存活
-                    if (aroundAliveCount < 2) block.State = BlockState.DEAD
-                    if (aroundAliveCount > 3) block.State = BlockState.DEAD
+                val aroundAliveCount = getRoundAliveCount(rowIndex, columnIndex, columnLastIndex, rowLastIndex)
+                if (block.isAlive()) { // 当前细胞存活
+                    if (aroundAliveCount < 2) newLifeList[columnIndex][rowIndex] = Block.DEAD
+                    if (aroundAliveCount > 3) newLifeList[columnIndex][rowIndex] = Block.DEAD
                 }
                 else { // 当前细胞死亡
-                    if (aroundAliveCount == 3) block.State = BlockState.ALIVE
+                    if (aroundAliveCount == 3) newLifeList[columnIndex][rowIndex] = Block.ALIVE
                 }
             }
         }
@@ -42,7 +44,7 @@ data class PlayGroundState(
         return newLifeList
     }
 
-    private fun getRoundAliveCount(pos: Point): Int {
+    private fun getRoundAliveCount(posX: Int, posY: Int, columnLastIndex: Int, rowLastIndex: Int): Int {
         var count = 0
         // 将当前细胞周围细胞按照下面序号编号
         //   y  y  y
@@ -50,22 +52,34 @@ data class PlayGroundState(
         // x 3 pos 4
         // x 5  6  7
 
-        // 查找 0 号
-        if (pos.x > 0 && pos.y > 0 && lifeList[pos.y-1][pos.x-1].State.isAlive()) count++
-        // 查找 1 号
-        if (pos.y > 0 && lifeList[pos.y-1][pos.x].State.isAlive()) count++
-        // 查找 2 号
-        if (pos.x < lifeList[0].lastIndex && pos.y > 0 && lifeList[pos.y-1][pos.x+1].State.isAlive()) count++
+        if (posY > 0) {
+            val topLine = lifeList[posY-1]
+
+            // 查找 0 号
+            if (posX > 0 && topLine[posX-1].isAlive()) count++
+            // 查找 1 号
+            if (topLine[posX].isAlive()) count++
+            // 查找 2 号
+            if (posX < rowLastIndex && topLine[posX+1].isAlive()) count++
+        }
+
+        if (posY < columnLastIndex) {
+            val bottomLine = lifeList[posY+1]
+
+            // 查找 5 号
+            if (posX > 0 && bottomLine[posX-1].isAlive()) count++
+            // 查找 6 号
+            if ( bottomLine[posX].isAlive()) count++
+            // 查找 7 号
+            if (posX < rowLastIndex && bottomLine[posX+1].isAlive()) count++
+        }
+
+        val currentLine = lifeList[posY]
         // 查找 3 号
-        if (pos.x > 0 && lifeList[pos.y][pos.x-1].State.isAlive()) count++
+        if (posX > 0 && currentLine[posX-1].isAlive()) count++
         // 查找 4 号
-        if (pos.x < lifeList[0].lastIndex && lifeList[pos.y][pos.x+1].State.isAlive()) count++
-        // 查找 5 号
-        if (pos.x > 0 && pos.y < lifeList.lastIndex && lifeList[pos.y+1][pos.x-1].State.isAlive()) count++
-        // 查找 6 号
-        if (pos.y < lifeList.lastIndex && lifeList[pos.y+1][pos.x].State.isAlive()) count++
-        // 查找 7 号
-        if (pos.x < lifeList[0].lastIndex && pos.y < lifeList.lastIndex && lifeList[pos.y+1][pos.x+1].State.isAlive()) count++
+        if (posX < rowLastIndex && currentLine[posX+1].isAlive()) count++
+
 
         return count
     }
@@ -74,14 +88,14 @@ data class PlayGroundState(
         /**
          * 随机生成一个初始图
          * */
-        fun randomGenerate(width: Int, height: Int, seed: Long = System.currentTimeMillis()): List<List<Block>> {
-            val list = mutableListOf<MutableList<Block>>()
+        fun randomGenerate(width: Int, height: Int, seed: Long = System.currentTimeMillis()): MutableList<MutableList<Int>> {
+            val list = mutableListOf<MutableList<Int>>()
             val random = Random(seed)
 
             for (h in 0 until height) {
-                val lineList = mutableListOf<Block>()
+                val lineList = mutableListOf<Int>()
                 for (w in 0 until width) {
-                    lineList.add(Block(if (random.nextBoolean()) BlockState.ALIVE else BlockState.DEAD))
+                    lineList.add(if (random.nextBoolean()) Block.ALIVE else Block.DEAD)
                 }
                 list.add(lineList)
             }

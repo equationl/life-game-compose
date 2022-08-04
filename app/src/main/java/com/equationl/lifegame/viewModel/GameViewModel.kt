@@ -1,17 +1,14 @@
 package com.equationl.lifegame.viewModel
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import com.equationl.lifegame.R
 import com.equationl.lifegame.dataModel.Block
-import com.equationl.lifegame.dataModel.BlockState
 import com.equationl.lifegame.model.*
 
 class GameViewModel : ViewModel() {
@@ -34,13 +31,13 @@ class GameViewModel : ViewModel() {
 
     private fun import(no: Int, context: Context) {
         val sourceString = context.resources.openRawResource(R.raw.bomber).bufferedReader().use { it.readText() }
-        val lifeList: MutableList<MutableList<Block>> = mutableListOf()
+        val lifeList: MutableList<MutableList<Int>> = mutableListOf()
 
         sourceString.lines().forEach { string ->
-            val line = mutableListOf<Block>()
+            val line = mutableListOf<Int>()
             string.forEach { char ->
-                if (char == '.') line.add(Block(BlockState.DEAD))
-                if (char == '*') line.add(Block(BlockState.ALIVE))
+                if (char == '.') line.add(Block.DEAD)
+                if (char == '*') line.add(Block.ALIVE)
             }
             lifeList.add(line)
         }
@@ -61,7 +58,9 @@ class GameViewModel : ViewModel() {
     }
 
     private fun runStep() {
+        val startTime = System.currentTimeMillis()
         val newList = viewStates.playGroundState.stepUpdate()
+        Log.i(TAG, "runStep: step duration: ${System.currentTimeMillis() - startTime} ms")
         viewStates = viewStates.copy(
             playGroundState = viewStates.playGroundState.copy(
                 lifeList = newList,

@@ -452,6 +452,257 @@ sourceString.lines().forEach { string ->
 
 [life-game-compose](https://github.com/equationl/life-game-compose) 、 [国内镜像仓库](https://gitee.com/equation/life-game-compose)
 
+# 更新记录
+## 优化计算速度
+
+*提示：为了方便说明问题，下面的速度测试均是在一个超级低端机（RK3288处理器，2GB DDR3运行内存）上进行的，所以耗时是正常手机的数十倍，例如，该低端设备在优化前耗时 20+ms，但是在正常手机上耗时只有个位数。*
+
+开始之前我们先来测试一下目前计算一个 100x100 的格子一轮需要耗时多久，在步进更新代码处(runStep)添加如下代码：
+
+```kotlin
+val startTime = System.currentTimeMillis()
+val newList = viewStates.playGroundState.stepUpdate()
+Log.i(TAG, "runStep: step duration: ${System.currentTimeMillis() - startTime} ms")
+```
+
+编译运行，输出如下：
+
+```
+runStep: step duration: 24 ms
+runStep: step duration: 23 ms
+runStep: step duration: 25 ms
+runStep: step duration: 23 ms
+runStep: step duration: 24 ms
+runStep: step duration: 23 ms
+runStep: step duration: 27 ms
+runStep: step duration: 26 ms
+runStep: step duration: 24 ms
+runStep: step duration: 23 ms
+runStep: step duration: 24 ms
+runStep: step duration: 23 ms
+runStep: step duration: 22 ms
+runStep: step duration: 24 ms
+runStep: step duration: 22 ms
+runStep: step duration: 23 ms
+runStep: step duration: 24 ms
+```
+
+可以看到，更新一轮大约需要 20-25 ms，这还仅仅只是计算新的状态，不包括绘制的时间，如果再加上绘制时间，这个耗时将变得难以接受。
+
+打开 AndroidStudio 的 ProFiler 录制进程信息，查看单次步进计算时都是哪些方法“拖了后腿”：
+
+![profiler](./img/profiler.jpg)
+
+可以看出，耗时方法主要是 `getRoundAliveCount` 和 `copy` 。很好！找到元凶了……吗？
+
+其实不然，这只是假象，真正耗时的其实并不是他俩，不明白？我们再来回顾一下他俩出现的地方：
+
+![code1](./img/code1.jpg)
+
+发现了吗？没错，它俩都是在循环当中。
+
+也就是说，虽然它俩确实比较耗时，但是也没有离谱到会被计算速度拉低到几十 ms 的地步，罪魁祸首是因为他们在循环之中，于是他们的耗时随着循环次数增加也在被不断的累积。
+
+那么，应该怎么去优化呢？
+
+首先看看 `getRoundAliveCount` 放大这个方法的耗时情况，可以看到它的耗时大多数是被取各种属性累计起来了：
+
+![profiler2](./img/profiler2.jpg)
+
+这个咱们确实可以优化，比如，对于 `lastIndex` 属性，这个值是固定不变的，不用每次遍历都去取一次， 还有 `ArrayList.get()` 其实这个方法有很多重复调用的地方，也可以优化一下，用空间换时间。而对于其他的耗时，诸如 `Block.isAlive` 、 `Block.State` 这个无法更改。
+
+那么我们再来看看 `copy` 是什么情况，这个都不用看图了，一想就知道，每次遍历 copy 时都会创建一个新的 Block 对象，耗时自然会居高不下。
+
+那么应该怎么优化呢？
+
+还记得我们前面说过的吗？细胞的状态有且仅有存活和死亡两种情况，也就是说，这里用 data class 嵌套 enum class 实属多余，只会徒增运行成本，此处其实可以直接使用 Int 或 Boolean 这种基本数据类型来储存。
+
+这样做还有一个好处，那就是上面说到的取 Block 属性的耗时也可以同样的优化掉。
+
+再更改一下判断条件，尽可能的减少判断次数，并且按照上面思路减少对象的创建，修改后代码如下：
+
+```kotlin
+    /**
+ * 更新一步状态
+ * */
+fun stepUpdate(): MutableList<MutableList<Int>> {
+    // 深度复制，不然无法 recompose
+    val newLifeList: MutableList<MutableList<Int>> = mutableListOf()
+    lifeList.forEach { lineList ->
+        newLifeList.add(lineList.map { it }.toMutableList())
+    }
+
+    val columnLastIndex = newLifeList.size - 1
+    val rowLastIndex = newLifeList[0].size - 1
+
+    newLifeList.forEachIndexed { columnIndex, lineList ->
+        lineList.forEachIndexed { rowIndex, block ->
+            val aroundAliveCount = getRoundAliveCount(rowIndex, columnIndex, columnLastIndex, rowLastIndex)
+            if (block.isAlive()) { // 当前细胞存活
+                if (aroundAliveCount < 2) newLifeList[columnIndex][rowIndex] = Block.DEAD
+                if (aroundAliveCount > 3) newLifeList[columnIndex][rowIndex] = Block.DEAD
+            }
+            else { // 当前细胞死亡
+                if (aroundAliveCount == 3) newLifeList[columnIndex][rowIndex] = Block.ALIVE
+            }
+        }
+    }
+
+    return newLifeList
+}
+
+private fun getRoundAliveCount(posX: Int, posY: Int, columnLastIndex: Int, rowLastIndex: Int): Int {
+    var count = 0
+    // 将当前细胞周围细胞按照下面序号编号
+    //   y  y  y
+    // x 0  1  2
+    // x 3 pos 4
+    // x 5  6  7
+
+    if (posY > 0) {
+        val topLine = lifeList[posY-1]
+
+        // 查找 0 号
+        if (posX > 0 && topLine[posX-1].isAlive()) count++
+        // 查找 1 号
+        if (topLine[posX].isAlive()) count++
+        // 查找 2 号
+        if (posX < rowLastIndex && topLine[posX+1].isAlive()) count++
+    }
+
+    if (posY < columnLastIndex) {
+        val bottomLine = lifeList[posY+1]
+
+        // 查找 5 号
+        if (posX > 0 && bottomLine[posX-1].isAlive()) count++
+        // 查找 6 号
+        if ( bottomLine[posX].isAlive()) count++
+        // 查找 7 号
+        if (posX < rowLastIndex && bottomLine[posX+1].isAlive()) count++
+    }
+
+    val currentLine = lifeList[posY]
+    // 查找 3 号
+    if (posX > 0 && currentLine[posX-1].isAlive()) count++
+    // 查找 4 号
+    if (posX < rowLastIndex && currentLine[posX+1].isAlive()) count++
+
+
+    return count
+}
+```
+
+上面定义了两个常量和一个扩展函数：
+
+```kotlin
+const val DEAD = 0
+const val ALIVE = 1
+
+fun Int.isAlive() = this == ALIVE
+```
+
+同样运行 100x100 的格子耗时如下：
+
+```
+step duration: 10 ms
+step duration: 9 ms
+step duration: 9 ms
+step duration: 9 ms
+step duration: 10 ms
+step duration: 9 ms
+step duration: 9 ms
+step duration: 10 ms
+step duration: 10 ms
+step duration: 9 ms
+step duration: 9 ms
+step duration: 9 ms
+step duration: 9 ms
+step duration: 9 ms
+step duration: 10 ms
+step duration: 9 ms
+step duration: 9 ms
+```
+
+耗时成功被控制在了 10ms 左右！
+
+但是还是觉得不太满意，那么怎么办呢？之所以这么耗时是因为遍历了两次，一次用来复制数组，一次用来计算，总觉得复制数组这段时间好浪费啊，能不能干掉呢？
+
+欸，还真的能，还记得吗？我们之所以要深度复制数组，一来是因为不复制无法触发 recompose ，二来是因为如果直接改原数组会造成计算错误。
+
+由于我们现在已经把数组储存数据从对象改成了基本数据类型，所以不存在无法 recompose 的情况了。
+
+那么，第二条怎么解决呢？也很简单，我们不是把数据类型改为了 Int 嘛？
+
+0 表示死亡；1 表示存活，那我们再多加几个状态不就得了？用 3 表示 从存活变成死亡，4 表示从死亡复活。
+
+然后在下一轮计算时顺手改回 0 或者 1，不就行了？
+
+说干就干，增加两个状态：
+
+```kotlin
+const val ALIVE_TO_DEAD = 3
+const val DEAD_TO_ALIVE = 4
+
+fun Int.isAlive() = (this == ALIVE || ALIVE_TO_DEAD)
+```
+
+然后去掉复制数组的代码，直接操作原数组。
+
+看一下耗时，因为其实复制数组耗时非常小，所以改成 500x500 的格子来测试，这是去掉复制数组前的耗时：
+
+```
+runStep: step duration: 471 ms
+runStep: step duration: 432 ms
+runStep: step duration: 447 ms
+runStep: step duration: 432 ms
+runStep: step duration: 428 ms
+runStep: step duration: 426 ms
+runStep: step duration: 435 ms
+runStep: step duration: 436 ms
+runStep: step duration: 438 ms
+runStep: step duration: 424 ms
+runStep: step duration: 436 ms
+runStep: step duration: 427 ms
+runStep: step duration: 434 ms
+```
+
+这是去除复制后的耗时：
+
+```
+runStep: step duration: 528 ms
+runStep: step duration: 531 ms
+runStep: step duration: 521 ms
+runStep: step duration: 522 ms
+runStep: step duration: 521 ms
+runStep: step duration: 521 ms
+runStep: step duration: 524 ms
+runStep: step duration: 520 ms
+runStep: step duration: 518 ms
+runStep: step duration: 518 ms
+runStep: step duration: 517 ms
+runStep: step duration: 517 ms
+runStep: step duration: 522 ms
+runStep: step duration: 521 ms
+runStep: step duration: 520 ms
+runStep: step duration: 515 ms
+```
+
+怎么回事？？？反而耗时更大了？
+
+显然，由于增加了额外的两个状态，在设置和读取状态时的耗时远远超过了直接复制数组的耗时，得不偿失，还是继续老老实实复制吧。
+
+这里已经无法优化了，但是还是觉得这个耗时无法接受怎么办？有没有办法让速度更快一点？
+
+看来看去，最终的着手点似乎都落在了减少遍历次数上，可是减少遍历次数说着简单，真实践起来太困难了，以我的技术水平目前无法做到……
+
+那怎么办呢？
+
+在B大佬的提醒下，我恍然大悟，或许可以使用 C/C++ 来实现这部分的计算，众所周知 C/C++ 的运行速度可比 Jvm 快多了。
+
+
+
+
+
 ## TODO LIST
 
 |            TODO            | 状态 | 备注 |

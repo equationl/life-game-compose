@@ -2,23 +2,15 @@ package com.equationl.lifegame.dataModel
 
 import androidx.compose.ui.graphics.Color
 
-data class Block(
-    var State: BlockState,
-) {
-    fun getColor() = if (this.State.isAlive()) Color.White else Color.Black
+object Block {
+    /**
+     * 每个格子的大小
+     * */
+    const val SIZE = 5
 
-    companion object {
-        /**
-         * 每个格子的大小
-         * */
-        const val SIZE = 5
+    const val DEAD = 0
+    const val ALIVE = 1
 
-    }
-}
-
-enum class BlockState {
-    ALIVE,
-    DEAD;
-
-    fun isAlive() = this == ALIVE
+    fun Int.getColor() = if (this.isAlive()) Color.White else Color.Black
+    fun Int.isAlive() = this == ALIVE
 }
