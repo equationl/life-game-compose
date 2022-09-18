@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material.OutlinedButton
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,8 +25,32 @@ import com.equationl.lifegame.viewModel.GameViewModel
 
 @Composable
 fun ControlBar(viewModel: GameViewModel, gameState: GameState) {
-    Row {
-        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxHeight()) {
+    val context = LocalContext.current
+
+    Column(
+        Modifier.fillMaxHeight(),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            ExpandableButton(text = "Random", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
+                RandomGenerateItem { width, height, seed ->
+                    viewModel.dispatch(GameAction.RandomGenerate(width, height, seed))
+                }
+            }
+            ExpandableButton(text = "Speed", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
+                SpeedItem {
+                    viewModel.dispatch(GameAction.ChangeSpeed(it))
+                }
+            }
+
+            ExpandableButton(text = "Load", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
+                ImportItem {
+                    viewModel.dispatch(GameAction.Import(it, context))
+                }
+            }
+        }
+        Row {
             OutlinedButton(
                 onClick = {
                     viewModel.dispatch(GameAction.ToggleGameState)
@@ -36,28 +62,6 @@ fun ControlBar(viewModel: GameViewModel, gameState: GameState) {
                 viewModel.dispatch(GameAction.RunStep)
             }) {
                 Text(text = "Step")
-            }
-        }
-        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxHeight()) {
-            ExpandableButton(text = "Random", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
-                RandomGenerateItem { width, height, seed ->
-                    viewModel.dispatch(GameAction.RandomGenerate(width, height, seed))
-                }
-            }
-        }
-        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxHeight()) {
-            ExpandableButton(text = "Speed", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
-                SpeedItem {
-                    viewModel.dispatch(GameAction.ChangeSpeed(it))
-                }
-            }
-        }
-        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxHeight()) {
-            val context = LocalContext.current
-            ExpandableButton(text = "", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
-                ImportItem {
-                    viewModel.dispatch(GameAction.Import(it, context))
-                }
             }
         }
     }
