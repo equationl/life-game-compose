@@ -1,5 +1,6 @@
 package com.equationl.lifegame.model
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import com.equationl.lifegame.dataModel.Block
 import com.equationl.lifegame.utils.PlayGroundUtils
@@ -12,7 +13,9 @@ data class PlayGroundState(
     val size: Size,
     val seed: Long,
     val step: Int,
-    val speed: RunningSpeed = RunningSpeed.Normal
+    val speed: RunningSpeed = RunningSpeed.Normal,
+    val scale: Float = 1f,
+    val offset: Offset = Offset.Zero
 ) {
 
     /**
@@ -33,6 +36,8 @@ data class PlayGroundState(
         if (seed != other.seed) return false
         if (step != other.step) return false
         if (speed != other.speed) return false
+        if (scale != other.scale) return false
+        if (offset != other.offset) return false
 
         return true
     }
@@ -43,6 +48,8 @@ data class PlayGroundState(
         result = 31 * result + seed.hashCode()
         result = 31 * result + step
         result = 31 * result + speed.hashCode()
+        result = 31 * result + scale.hashCode()
+        result = 31 * result + offset.hashCode()
         return result
     }
 

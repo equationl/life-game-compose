@@ -1,10 +1,10 @@
 package com.equationl.lifegame.viewModel
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.lifecycle.ViewModel
 import com.equationl.lifegame.R
@@ -26,7 +26,31 @@ class GameViewModel : ViewModel() {
             is GameAction.RandomGenerate -> randomGenerate(action.width, action.height, action.seed)
             is GameAction.ChangeSpeed -> changeSpeed(action.speed)
             is GameAction.Import -> import(action.no, action.context)
+            is GameAction.ChangeGround -> changeGround(action.scaleChange, action.offsetChange)
+            is GameAction.Reset -> reset()
         }
+    }
+
+    private fun reset() {
+        val playGroundState = viewStates.playGroundState
+
+        viewStates = viewStates.copy(
+            playGroundState = playGroundState.copy(
+                scale = 1f,
+                offset = Offset.Zero
+            )
+        )
+    }
+
+    private fun changeGround(scaleChange: Float, offsetChange: Offset) {
+        val playGroundState = viewStates.playGroundState
+
+        viewStates = viewStates.copy(
+            playGroundState = playGroundState.copy(
+                scale = playGroundState.scale * scaleChange,
+                offset = playGroundState.offset + offsetChange
+            )
+        )
     }
 
     private fun import(no: Int, context: Context) {
@@ -62,7 +86,7 @@ class GameViewModel : ViewModel() {
     private fun runStep() {
         val startTime = System.currentTimeMillis()
         val newList = viewStates.playGroundState.stepUpdate()
-        Log.i(TAG, "runStep: step duration: ${System.currentTimeMillis() - startTime} ms")
+        //Log.i(TAG, "runStep: step duration: ${System.currentTimeMillis() - startTime} ms")
         viewStates = viewStates.copy(
             playGroundState = viewStates.playGroundState.copy(
                 lifeList = newList,
@@ -72,7 +96,7 @@ class GameViewModel : ViewModel() {
     }
 
     private fun toggleGameState() {
-        Log.i(TAG, "toggleGameState: call!")
+        //Log.i(TAG, "toggleGameState: call!")
         viewStates = if (viewStates.gameState == GameState.Running) {
             viewStates.copy(gameState = GameState.Pause)
         } else {

@@ -1,11 +1,11 @@
 package com.equationl.lifegame.view
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.equationl.lifegame.model.GameAction
 import com.equationl.lifegame.viewModel.GameViewModel
 
 @Composable
@@ -16,7 +16,12 @@ fun GameScreen(viewModel: GameViewModel) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxSize()
         ) {
-            PlayGround(playGroundState = viewModel.viewStates.playGroundState)
+            PlayGround(
+                playGroundState = viewModel.viewStates.playGroundState,
+                onGroundChange = {
+                        scaleChange, offsetChange ->  viewModel.dispatch(GameAction.ChangeGround(scaleChange, offsetChange))
+                }
+            )
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally,

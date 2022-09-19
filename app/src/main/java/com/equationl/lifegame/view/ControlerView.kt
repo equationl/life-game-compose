@@ -63,15 +63,22 @@ fun ControlBar(viewModel: GameViewModel, gameState: GameState) {
             }) {
                 Text(text = "Step")
             }
+            OutlinedButton(modifier = Modifier.padding(start = 4.dp), enabled = gameState != GameState.Running, onClick = {
+                viewModel.dispatch(GameAction.Reset)
+            }) {
+                Text(text = "Reset")
+            }
         }
     }
 }
 
 @Composable
 fun ImportItem(onClick: (no: Int) -> Unit) {
-    Text(text = "1", Modifier.clickable {
-        onClick(1)
-    })
+    Column(modifier = Modifier.background(Color.White)) {
+        Text(text = "1", Modifier.clickable {
+            onClick(1)
+        })
+    }
 }
 
 @Composable
