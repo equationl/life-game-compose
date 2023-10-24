@@ -48,8 +48,7 @@ tasks.register("compileJni") {
             systemPrefix = "win32"
         }
         else if (Os.isFamily(Os.FAMILY_MAC)) {
-            // TODO 需要确定
-            systemPrefix = ""
+            systemPrefix = "darwin"
         }
         else {
             println("UnSupport System for compiler cpp, please compiler manual")

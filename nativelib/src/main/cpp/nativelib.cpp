@@ -1,8 +1,13 @@
 #include <jni.h>
 #include <string>
 
-#include <jni.h>
 #include <valarray>
+
+// #include <iostream>
+// #include <fstream>
+// #include <cstring>
+// using namespace std;
+
 
 extern "C" JNIEXPORT jobjectArray JNICALL
 Java_com_equationl_nativelib_NativeLib_stepUpdate(
@@ -10,6 +15,12 @@ Java_com_equationl_nativelib_NativeLib_stepUpdate(
         jobject,
         jobjectArray lifeList
         ) {
+
+    //ofstream out("/Users/equationl/testtest.txt", ios::out | ios::binary);
+
+    //out.write("start", 5);
+
+
     int len1 = env -> GetArrayLength(lifeList);
     auto dim =  (jintArray)env->GetObjectArrayElement(lifeList, 0);
     int len2 = env -> GetArrayLength(dim);
@@ -18,10 +29,16 @@ Java_com_equationl_nativelib_NativeLib_stepUpdate(
     for(int i=0; i<len1; ++i){
         auto oneDim = (jintArray)env->GetObjectArrayElement(lifeList, i);
         jint *element = env->GetIntArrayElements(oneDim, JNI_FALSE);
-        env->ReleaseIntArrayElements(oneDim, element, JNI_ABORT);
-        env->DeleteLocalRef(oneDim);
+        // 释放数组
+        // ① 模式 0 : 刷新 Java 数组 , 释放 C/C++ 数组
+        // ② 模式 1 ( JNI_COMMIT ) : 刷新 Java 数组 , 不释放 C/C ++ 数组
+        // ③ 模式 2 ( JNI_ABORT ) : 不刷新 Java 数组 , 释放 C/C++ 数组
+        // env->ReleaseIntArrayElements(oneDim, element, JNI_ABORT);
+        // 释放引用
+        // env->DeleteLocalRef(oneDim);
         board[i] = new int [len2];
         for(int j=0; j<len2; ++j) {
+            //out.write(std::to_string(element[j]).c_str(), 1);
             board[i][j]= element[j];
         }
     }
@@ -129,6 +146,8 @@ Java_com_equationl_nativelib_NativeLib_stepUpdate(
         env->SetObjectArrayElement(result, i, inner);
         env->DeleteLocalRef(inner);
     }
+
+    //out.close();
 
     return result;
 }
