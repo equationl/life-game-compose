@@ -9,7 +9,6 @@
 local.properties
 /app/src/main/java/com/equationl/lifegame/test.kt
 /.idea
-.DS_Store
 build/
 iosApp/Podfile.lock
 iosApp/Pods/*
@@ -17,5 +16,4 @@ iosApp/iosApp.xcworkspace/*
 iosApp/iosApp.xcodeproj/*
 !iosApp/iosApp.xcodeproj/project.pbxproj
 shared/shared.podspec
-/nativelib/src/main/cpp/nativelib.dll
-/desktopApp/resources/common/lib/nativelib.dll
+/desktopApp/resources/common/lib/
