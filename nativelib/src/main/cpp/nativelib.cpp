@@ -29,18 +29,18 @@ Java_com_equationl_nativelib_NativeLib_stepUpdate(
     for(int i=0; i<len1; ++i){
         auto oneDim = (jintArray)env->GetObjectArrayElement(lifeList, i);
         jint *element = env->GetIntArrayElements(oneDim, JNI_FALSE);
-        // 释放数组
-        // ① 模式 0 : 刷新 Java 数组 , 释放 C/C++ 数组
-        // ② 模式 1 ( JNI_COMMIT ) : 刷新 Java 数组 , 不释放 C/C ++ 数组
-        // ③ 模式 2 ( JNI_ABORT ) : 不刷新 Java 数组 , 释放 C/C++ 数组
-        // env->ReleaseIntArrayElements(oneDim, element, JNI_ABORT);
-        // 释放引用
-        // env->DeleteLocalRef(oneDim);
         board[i] = new int [len2];
         for(int j=0; j<len2; ++j) {
             //out.write(std::to_string(element[j]).c_str(), 1);
             board[i][j]= element[j];
         }
+        // 释放数组
+        // ① 模式 0 : 刷新 Java 数组 , 释放 C/C++ 数组
+        // ② 模式 1 ( JNI_COMMIT ) : 刷新 Java 数组 , 不释放 C/C ++ 数组
+        // ③ 模式 2 ( JNI_ABORT ) : 不刷新 Java 数组 , 释放 C/C++ 数组
+        env->ReleaseIntArrayElements(oneDim, element, JNI_ABORT);
+        // 释放引用
+        env->DeleteLocalRef(oneDim);
     }
 
 
