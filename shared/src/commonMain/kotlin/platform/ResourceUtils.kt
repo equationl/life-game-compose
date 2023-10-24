@@ -1,3 +1,3 @@
 package platform
 
-expect fun readResourceAsString(name: String, path: String): String
+expect suspend fun readResourceAsString(name: String, path: String): String

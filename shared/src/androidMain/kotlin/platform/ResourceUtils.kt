@@ -3,7 +3,7 @@ package platform
 import com.equationl.BaseApplication
 import java.io.InputStreamReader
 
-actual fun readResourceAsString(name: String, path: String): String {
+actual suspend fun readResourceAsString(name: String, path: String): String {
 /*    return with(BaseApplication.instance()) {
         val resourceId = resources.getIdentifier(
             name.substringBefore("."), "raw", packageName
