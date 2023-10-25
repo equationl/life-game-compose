@@ -18,6 +18,18 @@ kotlin {
             baseName = "shared"
             isStatic = true
         }
+
+        iosTarget.apply {
+            compilations.getByName("main") {
+                // TODO not test
+                cinterops {
+                    val nativelib by creating {
+                        defFile(project.file("src/iosMain/nativeinterop/cinterop/nativelib.def"))
+                        compilerOpts("-Isrc/iosMain/nativeinterop/cinterop/")
+                    }
+                }
+            }
+        }
     }
 
     sourceSets {
