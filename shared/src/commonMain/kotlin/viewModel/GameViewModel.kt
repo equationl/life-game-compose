@@ -14,7 +14,9 @@ import model.GameState
 import model.PlayGroundState
 import model.RunningSpeed
 import model.ViewState
+import `object`.DurationObj
 import platform.readResourceAsString
+import kotlin.time.measureTime
 
 
 @Composable
@@ -95,15 +97,23 @@ private fun changeSpeed(viewStates: MutableState<ViewState>, speed: RunningSpeed
 }
 
 private fun runStep(viewStates: MutableState<ViewState>) {
-    // val startTime = Clock.System.now().epochSeconds
-    val newList = viewStates.value.playGroundState.stepUpdate()
-    //Log.i(TAG, "runStep: step duration: ${System.currentTimeMillis() - startTime} ms")
+
+    val newList: Array<IntArray>
+
+    val duration = measureTime {
+        newList = viewStates.value.playGroundState.stepUpdate()
+    }
+
     viewStates.value = viewStates.value.copy(
         playGroundState = viewStates.value.playGroundState.copy(
             lifeList = newList,
-            step = viewStates.value.playGroundState.step+1
+            step = viewStates.value.playGroundState.step+1,
+            nowStepDuration = duration,
+            totalDuration = duration + viewStates.value.playGroundState.totalDuration
         )
     )
+
+    DurationObj.lastStepDuration = duration
 }
 
 private fun toggleGameState(viewStates: MutableState<ViewState>) {

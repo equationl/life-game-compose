@@ -2,12 +2,20 @@ package view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,7 +27,6 @@ import model.GameAction
 import model.GameState
 import model.RunningSpeed
 import view.widgets.ExpandableButton
-import view.widgets.ExpandableButtonOri
 
 @Composable
 fun ControlBar(
@@ -33,19 +40,22 @@ fun ControlBar(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(verticalAlignment = Alignment.Bottom) {
-            ExpandableButton(text = "Random", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
+            ExpandableButton(text = "Random", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
                 RandomGenerateItem { width, height, seed ->
+                    onDismissRequest()
                     gameChannel.trySend(GameAction.RandomGenerate(width, height, seed))
                 }
             }
-            ExpandableButton(text = "Speed", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
+            ExpandableButton(text = "Speed", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
                 SpeedItem {
+                    onDismissRequest()
                     gameChannel.trySend(GameAction.ChangeSpeed(it))
                 }
             }
 
-            ExpandableButton(text = "Load", modifier = Modifier.padding(start = 4.dp), orientation = ExpandableButtonOri.UP) {
+            ExpandableButton(text = "Load", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
                 ImportItem {
+                    onDismissRequest()
                     gameChannel.trySend(GameAction.Import(it))
                 }
             }

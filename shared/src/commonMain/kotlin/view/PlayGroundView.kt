@@ -59,5 +59,6 @@ fun PlayInfo(playGroundState: PlayGroundState) {
     Column(Modifier.background(Color.White)) {
         Text(text = "Step: ${playGroundState.step}")
         Text(text = "Info: ${playGroundState.size.width}x${playGroundState.size.height};@${playGroundState.seed};X${playGroundState.speed.title}")
+        Text(text = "Step now: ${playGroundState.nowStepDuration.inWholeMicroseconds} us; Step avg: ${(playGroundState.totalDuration / playGroundState.step.coerceAtLeast(1)).inWholeMicroseconds} us")
     }
 }
