@@ -24,8 +24,8 @@ kotlin {
                 // TODO not test
                 cinterops {
                     val nativelib by creating {
-                        defFile(project.file("src/iosMain/nativeinterop/cinterop/nativelib.def"))
-                        compilerOpts("-Isrc/iosMain/nativeinterop/cinterop/")
+                        defFile(project.file("src/iosMain/kotlin/nativeinterop/cinterop/nativelib.def"))
+                        compilerOpts("-Isrc/iosMain/kotlin/nativeinterop/cinterop/")
                     }
                 }
             }
