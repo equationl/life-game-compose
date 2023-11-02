@@ -29,5 +29,6 @@ sealed class GameAction {
     data class RandomGenerate(val width: Int, val height: Int, val seed: Long): GameAction()
     data class ChangeSpeed(val speed: RunningSpeed): GameAction()
     data class Import(val select: DefaultGame): GameAction()
+    data class Load(val data: String): GameAction()
     data class ChangeAlgorithm(val algorithm: Algorithm): GameAction()
 }

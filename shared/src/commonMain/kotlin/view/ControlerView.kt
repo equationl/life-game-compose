@@ -1,14 +1,13 @@
 package view
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
@@ -43,36 +42,52 @@ fun ControlBar(
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            modifier = Modifier.horizontalScroll(rememberScrollState())
-        ) {
-            ExpandableButton(text = "Random", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
-                RandomGenerateItem { width, height, seed ->
-                    onDismissRequest()
-                    gameChannel.trySend(GameAction.RandomGenerate(width, height, seed))
-                }
-            }
-            ExpandableButton(text = "Speed", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
-                SpeedItem {
-                    onDismissRequest()
-                    gameChannel.trySend(GameAction.ChangeSpeed(it))
-                }
-            }
 
-            ExpandableButton(text = "Load", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
-                ImportItem {
-                    onDismissRequest()
-                    gameChannel.trySend(GameAction.Import(it))
+        var isShowMoreOption by remember { mutableStateOf(false) }
+
+        AnimatedVisibility(
+            visible = isShowMoreOption,
+        ) {
+            Column {
+                Row {
+                    ExpandableButton(text = "Speed", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
+                        SpeedItem {
+                            onDismissRequest()
+                            gameChannel.trySend(GameAction.ChangeSpeed(it))
+                        }
+                    }
+
+                    ExpandableButton(text = "Algorithm", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
+                        AlgorithmItem {
+                            onDismissRequest()
+                            gameChannel.trySend(GameAction.ChangeAlgorithm(it))
+                        }
+                    }
                 }
-            }
-            ExpandableButton(text = "Algorithm", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
-                AlgorithmItem {
-                    onDismissRequest()
-                    gameChannel.trySend(GameAction.ChangeAlgorithm(it))
+
+                Row {
+                    ExpandableButton(text = "Random", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
+                        RandomGenerateItem { width, height, seed ->
+                            onDismissRequest()
+                            gameChannel.trySend(GameAction.RandomGenerate(width, height, seed))
+                        }
+                    }
+                    ExpandableButton(text = "Import", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
+                        ImportItem {
+                            onDismissRequest()
+                            gameChannel.trySend(GameAction.Import(it))
+                        }
+                    }
+                    ExpandableButton(text = "Load", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
+                        LoadItem {
+                            onDismissRequest()
+                            gameChannel.trySend(GameAction.Load(it))
+                        }
+                    }
                 }
             }
         }
+
         Row {
             OutlinedButton(
                 onClick = {
@@ -91,6 +106,11 @@ fun ControlBar(
             }) {
                 Text(text = "Reset")
             }
+            OutlinedButton(modifier = Modifier.padding(start = 4.dp), onClick = {
+                isShowMoreOption = !isShowMoreOption
+            }) {
+                Text(text = "More")
+            }
         }
     }
 }
@@ -102,6 +122,35 @@ fun ImportItem(onClick: (select: DefaultGame) -> Unit) {
             Text(text = it.showName, modifier = Modifier.clickable {
                 onClick(it)
             })
+        }
+    }
+}
+
+@Composable
+fun LoadItem(
+    onClick: (data: String) -> Unit
+) {
+    var data by remember { mutableStateOf("") }
+
+    Column(Modifier.background(Color.White)) {
+        Text("Load a game board by text, \".\" mean dead, \"*\" mean alive")
+
+        OutlinedTextField(
+            value = data,
+            label = {
+                Text(text = "board data")
+            },
+            maxLines = 50,
+            singleLine = false,
+            onValueChange = { value: String ->
+                data = value
+            }
+        )
+
+        OutlinedButton(onClick = {
+            onClick(data)
+        }) {
+            Text(text = "Load")
         }
     }
 }

@@ -35,6 +35,7 @@ fun GamePresenter(
                 is GameAction.RandomGenerate -> randomGenerate(viewState, action.width, action.height, action.seed)
                 is GameAction.ChangeSpeed -> changeSpeed(viewState, action.speed)
                 is GameAction.Import -> import(viewState, action.select)
+                is GameAction.Load -> load(viewState, action.data)
                 is GameAction.ChangeGround -> changeGround(viewState, action.scaleChange, action.offsetChange)
                 is GameAction.Reset -> reset(viewState)
                 is GameAction.ChangeAlgorithm -> changeAlgorithm(viewState, action.algorithm)
@@ -43,6 +44,10 @@ fun GamePresenter(
     }
 
     return viewState.value
+}
+
+private fun load(viewState: MutableState<ViewState>, data: String) {
+    loadFromText(viewState, data)
 }
 
 private fun changeAlgorithm(viewState: MutableState<ViewState>, algorithm: Algorithm) {
@@ -77,27 +82,7 @@ private fun changeGround(viewStates: MutableState<ViewState>, scaleChange: Float
 private suspend fun import(viewStates: MutableState<ViewState>, select: DefaultGame) {
 
     val sourceString = readResourceAsString(select.loadName, "assets/") // context.resources.openRawResource(R.raw.bomber).bufferedReader().use { it.readText() }
-    val lifeList: Array<IntArray> = Array(sourceString.lines().size) {
-        IntArray(1)
-    }
-
-    sourceString.lines().forEachIndexed { lineIndex, string ->
-        val line = IntArray(string.length)
-        string.forEachIndexed { index, char ->
-            if (char == '.') line[index] = Block.DEAD
-            if (char == '*') line[index] = Block.ALIVE
-        }
-        lifeList[lineIndex] = line
-    }
-
-    viewStates.value = viewStates.value.copy(gameState = GameState.Wait,
-        playGroundState = PlayGroundState(
-            lifeList,
-            Size(lifeList[0].size.toFloat(), lifeList.size.toFloat()),
-            -1,
-            0
-        )
-    )
+    loadFromText(viewStates, sourceString)
 }
 
 private fun changeSpeed(viewStates: MutableState<ViewState>, speed: RunningSpeed) {
@@ -141,6 +126,30 @@ private fun randomGenerate(viewStates: MutableState<ViewState>, width: Int, heig
             PlayGroundState.randomGenerate(width, height, seed),
             Size(width.toFloat(), height.toFloat()),
             seed,
+            0
+        )
+    )
+}
+
+private fun loadFromText(viewStates: MutableState<ViewState>, sourceString: String) {
+    val lifeList: Array<IntArray> = Array(sourceString.lines().size) {
+        IntArray(1)
+    }
+
+    sourceString.lines().forEachIndexed { lineIndex, string ->
+        val line = IntArray(string.length)
+        string.forEachIndexed { index, char ->
+            if (char == '.') line[index] = Block.DEAD
+            if (char == '*') line[index] = Block.ALIVE
+        }
+        lifeList[lineIndex] = line
+    }
+
+    viewStates.value = viewStates.value.copy(gameState = GameState.Wait,
+        playGroundState = PlayGroundState(
+            lifeList,
+            Size(lifeList[0].size.toFloat(), lifeList.size.toFloat()),
+            -1,
             0
         )
     )
