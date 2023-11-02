@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Size
 import dataModel.Block
 import kotlinx.datetime.Clock
 import platform.PlayGroundUtils
+import utils.CommonGameUtils
 import kotlin.random.Random
 import kotlin.time.Duration
 
@@ -25,8 +26,12 @@ data class PlayGroundState(
     /**
      * 更新一步状态
      * */
-    fun stepUpdate(): Array<IntArray> {
-        return PlayGroundUtils.stepUpdate(lifeList)
+    fun stepUpdate(algorithm: Algorithm): Array<IntArray> {
+        return if (algorithm == Algorithm.Cpp) {
+            PlayGroundUtils.stepUpdate(lifeList)
+        } else {
+            CommonGameUtils.stepUpdate(lifeList)
+        }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -88,4 +93,9 @@ enum class RunningSpeed(val title: String, val delayTime: Long) {
     Fast2("2", 13L),
     Fast4("6", 6L),
     NOT_SPECIFY("unlimited", 1L)
+}
+
+enum class Algorithm(val title: String) {
+    Kotlin("Kotlin"),
+    Cpp("Cpp")
 }

@@ -18,6 +18,7 @@ import dataModel.Block
 import dataModel.Block.getColor
 import dataModel.Block.isAlive
 import model.PlayGroundState
+import model.ViewState
 
 @Composable
 fun PlayGround(
@@ -55,10 +56,11 @@ fun PlayGround(
 }
 
 @Composable
-fun PlayInfo(playGroundState: PlayGroundState) {
+fun PlayInfo(viewState: ViewState) {
+    val playGroundState = viewState.playGroundState
     Column(Modifier.background(Color.White)) {
         Text(text = "Step: ${playGroundState.step}")
-        Text(text = "Info: ${playGroundState.size.width}x${playGroundState.size.height};@${playGroundState.seed};X${playGroundState.speed.title}")
+        Text(text = "Info: ${playGroundState.size.width}x${playGroundState.size.height};@${playGroundState.seed};s:${playGroundState.speed.title};a:${viewState.algorithm.title}")
         Text(text = "Step now: ${playGroundState.nowStepDuration.inWholeMicroseconds} us; Step avg: ${(playGroundState.totalDuration / playGroundState.step.coerceAtLeast(1)).inWholeMicroseconds} us")
     }
 }

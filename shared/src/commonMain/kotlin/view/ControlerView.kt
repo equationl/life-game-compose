@@ -2,11 +2,13 @@ package view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
@@ -21,8 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import constant.DefaultGame
 import kotlinx.coroutines.channels.Channel
 import kotlinx.datetime.Clock
+import model.Algorithm
 import model.GameAction
 import model.GameState
 import model.RunningSpeed
@@ -39,7 +43,10 @@ fun ControlBar(
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(verticalAlignment = Alignment.Bottom) {
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier.horizontalScroll(rememberScrollState())
+        ) {
             ExpandableButton(text = "Random", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
                 RandomGenerateItem { width, height, seed ->
                     onDismissRequest()
@@ -57,6 +64,12 @@ fun ControlBar(
                 ImportItem {
                     onDismissRequest()
                     gameChannel.trySend(GameAction.Import(it))
+                }
+            }
+            ExpandableButton(text = "Algorithm", modifier = Modifier.padding(start = 4.dp)) { onDismissRequest ->
+                AlgorithmItem {
+                    onDismissRequest()
+                    gameChannel.trySend(GameAction.ChangeAlgorithm(it))
                 }
             }
         }
@@ -83,11 +96,24 @@ fun ControlBar(
 }
 
 @Composable
-fun ImportItem(onClick: (no: Int) -> Unit) {
-    Column(modifier = Modifier.background(Color.White)) {
-        Text(text = "1", Modifier.clickable {
-            onClick(1)
-        })
+fun ImportItem(onClick: (select: DefaultGame) -> Unit) {
+    Column(Modifier.background(Color.White)) {
+        DefaultGame.entries.forEach {
+            Text(text = it.showName, modifier = Modifier.clickable {
+                onClick(it)
+            })
+        }
+    }
+}
+
+@Composable
+fun AlgorithmItem(onClick: (algorithm: Algorithm) -> Unit) {
+    Column(Modifier.background(Color.White)) {
+        Algorithm.entries.forEach {
+            Text(text = it.title, modifier = Modifier.clickable {
+                onClick(it)
+            })
+        }
     }
 }
 

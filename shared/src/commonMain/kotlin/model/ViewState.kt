@@ -2,6 +2,7 @@ package model
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import constant.DefaultGame
 
 data class ViewState(
     val gameState: GameState = GameState.Wait,
@@ -10,7 +11,8 @@ data class ViewState(
         Size(50f, 50f),
         1,
         0
-    )
+    ),
+    val algorithm: Algorithm = Algorithm.Cpp
 )
 
 enum class GameState(val msg: String) {
@@ -26,5 +28,6 @@ sealed class GameAction {
     data class ChangeGround(val scaleChange: Float, val offsetChange: Offset): GameAction()
     data class RandomGenerate(val width: Int, val height: Int, val seed: Long): GameAction()
     data class ChangeSpeed(val speed: RunningSpeed): GameAction()
-    data class Import(val no: Int): GameAction()
+    data class Import(val select: DefaultGame): GameAction()
+    data class ChangeAlgorithm(val algorithm: Algorithm): GameAction()
 }

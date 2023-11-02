@@ -7,8 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import constant.DefaultGame
 import dataModel.Block
 import kotlinx.coroutines.flow.Flow
+import model.Algorithm
 import model.GameAction
 import model.GameState
 import model.PlayGroundState
@@ -32,14 +34,22 @@ fun GamePresenter(
                 is GameAction.ToggleGameState -> toggleGameState(viewState)
                 is GameAction.RandomGenerate -> randomGenerate(viewState, action.width, action.height, action.seed)
                 is GameAction.ChangeSpeed -> changeSpeed(viewState, action.speed)
-                is GameAction.Import -> import(viewState, action.no)
+                is GameAction.Import -> import(viewState, action.select)
                 is GameAction.ChangeGround -> changeGround(viewState, action.scaleChange, action.offsetChange)
                 is GameAction.Reset -> reset(viewState)
+                is GameAction.ChangeAlgorithm -> changeAlgorithm(viewState, action.algorithm)
             }
         }
     }
 
     return viewState.value
+}
+
+private fun changeAlgorithm(viewState: MutableState<ViewState>, algorithm: Algorithm) {
+    viewState.value = viewState.value.copy(
+        gameState = GameState.Pause,
+        algorithm = algorithm
+    )
 }
 
 private fun reset(viewStates: MutableState<ViewState>) {
@@ -64,9 +74,9 @@ private fun changeGround(viewStates: MutableState<ViewState>, scaleChange: Float
     )
 }
 
-private suspend fun import(viewStates: MutableState<ViewState>, no: Int) {
+private suspend fun import(viewStates: MutableState<ViewState>, select: DefaultGame) {
 
-    val sourceString = readResourceAsString("bomber.txt", "assets/") // context.resources.openRawResource(R.raw.bomber).bufferedReader().use { it.readText() }
+    val sourceString = readResourceAsString(select.loadName, "assets/") // context.resources.openRawResource(R.raw.bomber).bufferedReader().use { it.readText() }
     val lifeList: Array<IntArray> = Array(sourceString.lines().size) {
         IntArray(1)
     }
@@ -83,7 +93,7 @@ private suspend fun import(viewStates: MutableState<ViewState>, no: Int) {
     viewStates.value = viewStates.value.copy(gameState = GameState.Wait,
         playGroundState = PlayGroundState(
             lifeList,
-            Size(100f, 100f),
+            Size(lifeList[0].size.toFloat(), lifeList.size.toFloat()),
             -1,
             0
         )
@@ -101,7 +111,7 @@ private fun runStep(viewStates: MutableState<ViewState>) {
     val newList: Array<IntArray>
 
     val duration = measureTime {
-        newList = viewStates.value.playGroundState.stepUpdate()
+        newList = viewStates.value.playGroundState.stepUpdate(viewStates.value.algorithm)
     }
 
     viewStates.value = viewStates.value.copy(
