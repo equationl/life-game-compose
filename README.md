@@ -2,7 +2,7 @@
 
 ## 介绍
 
-使用 compose 实现的康威生命游戏，目前支持安卓平台
+使用 Compose MultiPlatform 实现的康威生命游戏，支持桌面端（Windows，macOS，Linux）、移动端（Android、iOS）。
 
 ## 截图预览
 

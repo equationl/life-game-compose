@@ -21,7 +21,6 @@ kotlin {
 
         iosTarget.apply {
             compilations.getByName("main") {
-                // TODO not test
                 cinterops {
                     val nativelib by creating {
                         defFile(project.file("src/iosMain/kotlin/nativeinterop/cinterop/nativelib.def"))
