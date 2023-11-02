@@ -6,4 +6,5 @@ enum class DefaultGame(val showName: String, val loadName: String) {
     Siesta(showName = "siesta", loadName = "siesta.txt"),
     SkewedTrafficLight(showName = "skewed_traffic_light", loadName = "skewed_traffic_light.txt"),
     TNosed(showName = "t_nosed", loadName = "t_nosed.txt"),
+    Weekender(showName = "weekender", loadName = "weekender.txt"),
 }
