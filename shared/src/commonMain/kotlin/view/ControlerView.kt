@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -19,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import constant.DefaultGame
@@ -117,7 +117,7 @@ fun ControlBar(
 
 @Composable
 fun ImportItem(onClick: (select: DefaultGame) -> Unit) {
-    Column(Modifier.background(Color.White)) {
+    Column(Modifier.background(MaterialTheme.colors.surface)) {
         DefaultGame.entries.forEach {
             Text(text = it.showName, modifier = Modifier.clickable {
                 onClick(it)
@@ -132,7 +132,7 @@ fun LoadItem(
 ) {
     var data by remember { mutableStateOf("") }
 
-    Column(Modifier.background(Color.White)) {
+    Column(Modifier.background(MaterialTheme.colors.surface)) {
         Text("Load a game board by text, \".\" mean dead, \"*\" mean alive")
 
         OutlinedTextField(
@@ -157,7 +157,7 @@ fun LoadItem(
 
 @Composable
 fun AlgorithmItem(onClick: (algorithm: Algorithm) -> Unit) {
-    Column(Modifier.background(Color.White)) {
+    Column(Modifier.background(MaterialTheme.colors.surface)) {
         Algorithm.entries.forEach {
             Text(text = it.title, modifier = Modifier.clickable {
                 onClick(it)
@@ -168,7 +168,7 @@ fun AlgorithmItem(onClick: (algorithm: Algorithm) -> Unit) {
 
 @Composable
 fun SpeedItem(onClick: (speed: RunningSpeed) -> Unit) {
-    Column(Modifier.background(Color.White)) {
+    Column(Modifier.background(MaterialTheme.colors.surface)) {
         RunningSpeed.entries.forEach {
             Text(text = it.title, modifier = Modifier.clickable {
                 onClick(it)
@@ -183,7 +183,7 @@ fun RandomGenerateItem(onClick: (width: Int, height: Int, seed: Long) -> Unit) {
     var height by remember { mutableStateOf("50") }
     var seed by remember { mutableStateOf(Clock.System.now().epochSeconds.toString()) }
 
-    Column(Modifier.background(Color.White)) {
+    Column(Modifier.background(MaterialTheme.colors.surface)) {
         OutlinedTextField(
             value = width,
             label = {

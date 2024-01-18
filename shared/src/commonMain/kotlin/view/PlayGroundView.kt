@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -58,7 +59,7 @@ fun PlayGround(
 @Composable
 fun PlayInfo(viewState: ViewState) {
     val playGroundState = viewState.playGroundState
-    Column(Modifier.background(Color.White)) {
+    Column(Modifier.background(MaterialTheme.colors.surface)) {
         Text(text = "Step: ${playGroundState.step}")
         Text(text = "Info: ${playGroundState.size.width}x${playGroundState.size.height};@${playGroundState.seed};s:${playGroundState.speed.title};a:${viewState.algorithm.title}")
         Text(text = "Step now: ${playGroundState.nowStepDuration.inWholeMicroseconds} us; Step avg: ${(playGroundState.totalDuration / playGroundState.step.coerceAtLeast(1)).inWholeMicroseconds} us")

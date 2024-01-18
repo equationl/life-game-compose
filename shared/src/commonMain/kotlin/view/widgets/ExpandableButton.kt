@@ -1,10 +1,12 @@
 package view.widgets
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -34,9 +36,10 @@ fun ExpandableButton(
             onDismissRequest = {
                 isShowSubItem = false
             },
+            modifier = Modifier.background(MaterialTheme.colors.surface)
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                modifier = Modifier.background(MaterialTheme.colors.surface).padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 subItem {
                     isShowSubItem = false
